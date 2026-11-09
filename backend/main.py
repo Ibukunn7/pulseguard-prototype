@@ -1,3 +1,5 @@
+from tkinter import NORMAL
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models import VitalReading
@@ -28,10 +30,16 @@ def home():
 @app.post("/vitals")
 def add_vital(reading: VitalReading):
 
-    alert = None
+    alert = "NORMAL"
 
     if reading.heart_rate > 110:
         alert = "HIGH RISK"
+
+    elif reading.heart_rate > 95:
+        alert = "MODERATE RISK"
+
+    elif reading.sleep_hours < 5:
+        alert = "MODERATE RISK"
 
     vitals.append(
         {
