@@ -97,6 +97,9 @@ def main() -> None:
     parser.add_argument("--loop", action="store_true", help="restart from day 1 after the last day")
     args = parser.parse_args()
 
+    requests.put(f"{API}/simulation",
+                 json={"seconds_per_day": args.interval, "total_days": args.days}, timeout=5)
+
     while True:
         requests.delete(f"{API}/readings", timeout=5)
         print(f"Replaying {args.days} days for {len(PROFILES)} patients, {args.interval}s per day")

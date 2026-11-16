@@ -22,6 +22,26 @@
   font-size: 0.95rem;
 }
 
+.header .status {
+  text-align: right;
+}
+
+.demo-note {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--amber);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 6px;
+  padding: 3px 8px;
+  display: inline-block;
+}
+
+@media (max-width: 700px) {
+  .header .status {
+    text-align: left;
+  }
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 from models import DailyReading, Patient, PatientDetail, PatientSummary
 from recovery import band_series, baseline_hr, evaluate, week_of
@@ -38,6 +39,15 @@ PATIENTS: dict[int, Patient] = {
 
 READINGS: dict[int, list[DailyReading]] = {pid: [] for pid in PATIENTS}
 
+# Set by the simulator so the dashboard can say how fast demo time runs.
+# Real readings arrive once a day; this is None when no simulator is attached.
+SIMULATION: dict = {"seconds_per_day": None, "total_days": None}
+
+
+class SimulationConfig(BaseModel):
+    seconds_per_day: float = Field(gt=0)
+    total_days: int = Field(gt=0)
+
 
 def _summary(patient: Patient) -> PatientSummary:
     readings = READINGS[patient.id]
@@ -67,7 +77,15 @@ def home():
 @app.get("/health")
 def health():
     return {"status": "ok", "patients": len(PATIENTS),
-            "readings": sum(len(r) for r in READINGS.values())}
+            "readings": sum(len(r) for r in READINGS.values()),
+            "simulation": SIMULATION}
+
+
+@app.put("/simulation")
+def set_simulation(config: SimulationConfig):
+    """Called by the simulator on start so the dashboard can label demo time."""
+    SIMULATION.update(config.model_dump())
+    return SIMULATION
 
 
 @app.get("/patients", response_model=list[PatientSummary])

@@ -124,15 +124,21 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
+  const [simulation, setSimulation] = useState(null);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       try {
-        const res = await fetch(`${API}/patients`);
+        const [res, health] = await Promise.all([
+          fetch(`${API}/patients`),
+          fetch(`${API}/health`),
+        ]);
         const data = await res.json();
+        const status = await health.json();
         if (active) {
           setPatients(data);
+          setSimulation(status.simulation);
           setError(null);
         }
       } catch (e) {
@@ -174,6 +180,9 @@ export default function App() {
   const flagged = patients.filter((p) => p.flag_count > 0).length;
   const onTrack = patients.filter((p) => p.flag_count === 0 && p.day > 0).length;
   const currentDay = Math.max(0, ...patients.map((p) => p.day));
+  const demoNote = simulation?.seconds_per_day
+    ? `Demo clock: 1 recovery day every ${simulation.seconds_per_day}s, replaying ${simulation.total_days} days. Real readings arrive once a day.`
+    : "No simulator attached. Readings arrive once a day from the patient's device.";
 
   return (
     <div className="app">
@@ -182,7 +191,10 @@ export default function App() {
           <h1>PulseGuard</h1>
           <div className="sub">Remote recovery monitoring after total knee replacement · GP view</div>
         </div>
-        <div className="sub">{error ? error : `Recovery day ${currentDay} · refreshing every ${POLL_MS / 1000}s`}</div>
+        <div className="status">
+          <div className="sub">{error ? error : `Recovery day ${currentDay} · dashboard refreshes every ${POLL_MS / 1000}s`}</div>
+          <div className="demo-note">{demoNote}</div>
+        </div>
       </header>
 
       <section className="stats">
