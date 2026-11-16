@@ -1,0 +1,13 @@
+site_name: PulseGuard Documentation
+
+theme:
+  name: mkdocs
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Setup Guide: setup.md
+  - API Documentation: api.md
+  - Testing: testing.md
+  - Operations Runbook: runbook.md
+  - Changelog: changelog.md
