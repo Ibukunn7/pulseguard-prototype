@@ -1,0 +1,54 @@
+# PulseGuard prototype: three services, the GP dashboard and the simulator.
+#
+#   docker compose up --build
+#
+# Dashboard:          http://localhost:3000
+# Patient service:    http://localhost:8001/docs
+# Telemetry service:  http://localhost:8002/docs
+# Alert service:      http://localhost:8003/docs
+
+services:
+  patient-service:
+    build: ./services/patient-service
+    ports:
+      - "8001:8000"
+
+  telemetry-service:
+    build: ./services/telemetry-service
+    ports:
+      - "8002:8000"
+
+  alert-service:
+    build: ./services/alert-service
+    environment:
+      PATIENT_SERVICE_URL: http://patient-service:8000
+      TELEMETRY_SERVICE_URL: http://telemetry-service:8000
+    ports:
+      - "8003:8000"
+    depends_on:
+      patient-service:
+        condition: service_healthy
+      telemetry-service:
+        condition: service_healthy
+
+  dashboard:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      alert-service:
+        condition: service_healthy
+
+  simulator:
+    build: ./simulator
+    environment:
+      TELEMETRY_SERVICE_URL: http://telemetry-service:8000
+      ALERT_SERVICE_URL: http://alert-service:8000
+      SIM_INTERVAL: "1.5"
+      SIM_DAYS: "42"
+      SIM_LOOP: "true"
+    depends_on:
+      telemetry-service:
+        condition: service_healthy
+      alert-service:
+        condition: service_healthy

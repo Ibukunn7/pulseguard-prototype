@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import TrendChart from "./components/TrendChart.jsx";
 
-const API = "http://127.0.0.1:8000";
+// Relative base: Vite proxies /api to the alert service in development,
+// Nginx does the same in the container. See vite.config.js and nginx.conf.
+const API = import.meta.env.VITE_API_BASE || "/api";
 const POLL_MS = 2000;
 
 function FlagPill({ flag }) {
@@ -125,24 +127,30 @@ export default function App() {
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   const [simulation, setSimulation] = useState(null);
+  const [services, setServices] = useState(null);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       try {
-        const [res, health] = await Promise.all([
+        const [res, statusRes] = await Promise.all([
           fetch(`${API}/patients`),
-          fetch(`${API}/health`),
+          fetch(`${API}/status`),
         ]);
+        const status = statusRes.ok ? await statusRes.json() : null;
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.detail || `Alert service returned ${res.status}`);
+        }
         const data = await res.json();
-        const status = await health.json();
         if (active) {
           setPatients(data);
-          setSimulation(status.simulation);
+          setSimulation(status?.simulation ?? null);
+          setServices(status?.services ?? null);
           setError(null);
         }
       } catch (e) {
-        if (active) setError("Backend not reachable");
+        if (active) setError(e.message === "Failed to fetch" ? "Alert service not reachable" : e.message);
       }
     };
     load();
@@ -193,6 +201,13 @@ export default function App() {
         </div>
         <div className="status">
           <div className="sub">{error ? error : `Recovery day ${currentDay} · dashboard refreshes every ${POLL_MS / 1000}s`}</div>
+          {services && (
+            <div className="services">
+              {Object.entries(services).map(([name, state]) => (
+                <span key={name} className={`service ${state}`}>{name} {state}</span>
+              ))}
+            </div>
+          )}
           <div className="demo-note">{demoNote}</div>
         </div>
       </header>

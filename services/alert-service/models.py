@@ -1,4 +1,4 @@
-"""Data models for the PulseGuard knee-replacement recovery prototype."""
+"""Models the alert service reads from the other services and serves to the dashboard."""
 
 from datetime import date, datetime
 from typing import Literal, Optional
@@ -10,7 +10,7 @@ FlagStatus = Literal["clear", "flagged", "pending"]
 
 
 class Patient(BaseModel):
-    """A patient recovering at home after a primary total knee replacement."""
+    """As served by the patient service."""
 
     id: int
     name: str
@@ -20,15 +20,15 @@ class Patient(BaseModel):
 
 
 class DailyReading(BaseModel):
-    """One day of wearable metrics plus the patient's pain score."""
+    """As served by the telemetry service."""
 
     patient_id: int
-    day: int = Field(ge=1, description="Days since surgery, starting at 1")
+    day: int = Field(ge=1)
     steps: int = Field(ge=0)
-    resting_hr: int = Field(ge=30, le=200, description="Resting heart rate in BPM")
-    sleep_hours: float = Field(ge=0, le=24)
-    pain: int = Field(ge=0, le=10, description="Patient-reported pain, 0 to 10")
-    recorded_at: datetime = Field(default_factory=datetime.now)
+    resting_hr: int
+    sleep_hours: float
+    pain: int = Field(ge=0, le=10)
+    recorded_at: Optional[datetime] = None
 
 
 class Flag(BaseModel):
@@ -60,7 +60,7 @@ class BandPoint(BaseModel):
 
 
 class PatientDetail(PatientSummary):
-    """Detail view: everything in the summary plus history and the band."""
+    """Detail view: summary plus history and the expected band."""
 
     readings: list[DailyReading]
     band: list[BandPoint]

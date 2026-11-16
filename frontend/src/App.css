@@ -26,6 +26,25 @@
   text-align: right;
 }
 
+.services {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+
+.service {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--grey);
+  color: var(--muted);
+}
+
+.service.up { color: var(--green); border-color: rgba(34, 197, 94, 0.5); }
+.service.down { color: var(--red); border-color: var(--red); }
+
 .demo-note {
   margin-top: 4px;
   font-size: 0.8rem;
@@ -39,6 +58,9 @@
 @media (max-width: 700px) {
   .header .status {
     text-align: left;
+  }
+  .services {
+    justify-content: flex-start;
   }
 }
 
