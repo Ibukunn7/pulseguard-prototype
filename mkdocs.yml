@@ -1,7 +1,14 @@
 site_name: PulseGuard Documentation
 
 theme:
-  name: mkdocs
+  name: material
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 nav:
   - Home: index.md
@@ -10,4 +17,5 @@ nav:
   - API Documentation: api.md
   - Testing: testing.md
   - Operations Runbook: runbook.md
+  - CI/CD: cicd.md
   - Changelog: changelog.md

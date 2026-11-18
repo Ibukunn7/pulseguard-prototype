@@ -1,117 +1,147 @@
-PulseGuard Operations Runbook
+# PulseGuard Operations Runbook
 
-Overview
+## Overview
+
 This runbook provides instructions for operating and troubleshooting the PulseGuard prototype.
 
-System Startup Procedure
-The PulseGuard prototype consists of three components:
+## System Startup
 
-FastAPI Backend
-Patient Simulator
-React Dashboard
-All three components must be running.
+Start the full stack:
 
+```
+docker compose up --build
+```
 
-Start Backend
-Navigate to:
+Expected result: five containers start in order. The dashboard is available at `http://localhost:3000`.
 
-cd backend
-Run:
+## System Shutdown
 
-uvicorn main:app --reload
-Expected Result:
+```
+docker compose down
+```
 
-INFO: Uvicorn running on http://127.0.0.1:8000
+## Viewing Logs
 
-Start Simulator
-Open a second terminal.
+All services:
 
-Navigate to:
+```
+docker compose logs -f
+```
 
-cd simulator
-Run:
+One service:
 
-python patient_simulator.py
-Expected Result:
+```
+docker compose logs -f alert-service
+```
 
-Patient telemetry data is generated every few seconds.
+Service names: `patient-service`, `telemetry-service`, `alert-service`, `dashboard`, `simulator`.
 
-Start Dashboard
-Open a third terminal.
+## Verification Checks
 
-Navigate to:
+### Patient Service
 
-cd frontend
-Run:
-
-npm run dev
-Expected Result:
-
-http://localhost:5173
-
-
-Verification Checks
-Backend Check
 Open:
 
-http://127.0.0.1:8000
-Expected Response:
+```
+http://localhost:8001/health
+```
 
-{
-  "message": "PulseGuard Backend Running"
-}
+Expected response:
 
-Telemetry Check
+```json
+{ "status": "ok" }
+```
+
+### Telemetry Service
+
 Open:
 
-http://127.0.0.1:8000/vitals
-Expected Result:
+```
+http://localhost:8002/health
+```
 
-Patient telemetry records should be displayed.
+### Alert Service
 
-Dashboard Check
 Open:
 
-http://localhost:5173
-Expected Result:
+```
+http://localhost:8003/health
+```
 
-Patient cards and dashboard statistics should be visible.
+### Dashboard
 
-Troubleshooting
-Dashboard Not Loading Data
-Possible Cause
-Backend not running.
+Open:
 
-Solution
-Restart FastAPI:
+```
+http://localhost:3000
+```
 
-uvicorn main:app --reload
+Expected result: patient cards and service status pills are visible.
 
-No Patient Data Appears
-Possible Cause
-Simulator not running.
+## Troubleshooting
 
-Solution
-Start:
+### Dashboard Shows No Data
 
-python patient_simulator.py
+Possible cause: alert service not running.
 
-CORS Error
-Example Error
-Access to fetch has been blocked by CORS policy
-Solution
-Verify CORSMiddleware is configured in the backend.
+Solution:
 
-Port Already In Use
-Solution
-Terminate existing process using the port and restart the application.
+```
+docker compose restart alert-service
+```
 
-Future Operational Features
+### Service Shows as Down in Dashboard
+
+Possible cause: container failed its health check.
+
+Solution:
+
+```
+docker compose logs alert-service
+docker compose restart alert-service
+```
+
+### Port Already in Use
+
+Possible cause: another process is using one of the required ports (8001, 8002, 8003, 3000).
+
+Solution: identify and stop the conflicting process, then restart the stack.
+
+Windows:
+
+```
+netstat -ano | findstr :3000
+taskkill /PID <pid> /F
+```
+
+### No Patient Data After Startup
+
+Possible cause: simulator has not started yet or exited early.
+
+Solution:
+
+```
+docker compose logs simulator
+docker compose restart simulator
+```
+
+### Resetting All Data
+
+Stop the stack, then start fresh:
+
+```
+docker compose down
+docker compose up --build
+```
+
+All readings are stored in memory and are cleared on restart.
+
+## Future Operational Features
+
 Future versions of PulseGuard will include:
 
-PostgreSQL database
-Docker deployment
-CI/CD pipelines
-Logging and monitoring
-Kubernetes deployment
-Alert notifications
+- PostgreSQL with persistent storage
+- Structured logging with a request ID across services
+- Prometheus and Grafana dashboards
+- Alerting on service health
+- Kubernetes deployment
