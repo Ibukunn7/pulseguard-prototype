@@ -14,13 +14,13 @@ The following software must be installed:
 
 ## Clone Repository
 
-```
+```bash
 git clone https://github.com/Ibukunn7/pulseguard-prototype.git
 ```
 
 Navigate into the repository:
 
-```
+```bash
 cd pulseguard-prototype
 ```
 
@@ -28,7 +28,7 @@ cd pulseguard-prototype
 
 Build and start all services:
 
-```
+```bash
 docker compose up --build
 ```
 
@@ -43,15 +43,11 @@ The following ports will be available:
 
 The simulator starts automatically and begins replaying patient data.
 
-Open the dashboard at:
-
-```
-http://localhost:3000
-```
+Open the dashboard at `http://localhost:3000`.
 
 ## Stopping the Stack
 
-```
+```bash
 docker compose down
 ```
 
@@ -59,7 +55,7 @@ docker compose down
 
 If Docker is not available, each service can be run manually.
 
-### Prerequisites
+### Manual Prerequisites
 
 - Python 3.12
 - Node.js 20
@@ -67,7 +63,7 @@ If Docker is not available, each service can be run manually.
 
 ### Patient Service
 
-```
+```bash
 cd services/patient-service
 pip install -r requirements.txt
 uvicorn main:app --port 8001
@@ -75,7 +71,7 @@ uvicorn main:app --port 8001
 
 ### Telemetry Service
 
-```
+```bash
 cd services/telemetry-service
 pip install -r requirements.txt
 uvicorn main:app --port 8002
@@ -83,7 +79,7 @@ uvicorn main:app --port 8002
 
 ### Alert Service
 
-```
+```bash
 cd services/alert-service
 pip install -r requirements.txt
 uvicorn main:app --port 8003
@@ -91,21 +87,17 @@ uvicorn main:app --port 8003
 
 ### Dashboard
 
-```
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-The dashboard will be available at:
-
-```
-http://localhost:5173
-```
+The dashboard will be available at `http://localhost:5173`.
 
 ### Simulator
 
-```
+```bash
 cd simulator
 pip install -r requirements.txt
 python patient_simulator.py

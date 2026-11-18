@@ -8,7 +8,7 @@ The system ingests daily patient readings, evaluates them against recovery rules
 
 ## System Architecture
 
-```
+```text
 Simulator
    ↓
 Patient Service   Telemetry Service

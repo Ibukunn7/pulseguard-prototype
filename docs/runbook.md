@@ -8,7 +8,7 @@ This runbook provides instructions for operating and troubleshooting the PulseGu
 
 Start the full stack:
 
-```
+```bash
 docker compose up --build
 ```
 
@@ -16,7 +16,7 @@ Expected result: five containers start in order. The dashboard is available at `
 
 ## System Shutdown
 
-```
+```bash
 docker compose down
 ```
 
@@ -24,13 +24,13 @@ docker compose down
 
 All services:
 
-```
+```bash
 docker compose logs -f
 ```
 
 One service:
 
-```
+```bash
 docker compose logs -f alert-service
 ```
 
@@ -40,11 +40,7 @@ Service names: `patient-service`, `telemetry-service`, `alert-service`, `dashboa
 
 ### Patient Service
 
-Open:
-
-```
-http://localhost:8001/health
-```
+Open `http://localhost:8001/health`.
 
 Expected response:
 
@@ -54,27 +50,15 @@ Expected response:
 
 ### Telemetry Service
 
-Open:
-
-```
-http://localhost:8002/health
-```
+Open `http://localhost:8002/health`.
 
 ### Alert Service
 
-Open:
-
-```
-http://localhost:8003/health
-```
+Open `http://localhost:8003/health`.
 
 ### Dashboard
 
-Open:
-
-```
-http://localhost:3000
-```
+Open `http://localhost:3000`.
 
 Expected result: patient cards and service status pills are visible.
 
@@ -86,7 +70,7 @@ Possible cause: alert service not running.
 
 Solution:
 
-```
+```bash
 docker compose restart alert-service
 ```
 
@@ -96,7 +80,7 @@ Possible cause: container failed its health check.
 
 Solution:
 
-```
+```bash
 docker compose logs alert-service
 docker compose restart alert-service
 ```
@@ -109,7 +93,7 @@ Solution: identify and stop the conflicting process, then restart the stack.
 
 Windows:
 
-```
+```bash
 netstat -ano | findstr :3000
 taskkill /PID <pid> /F
 ```
@@ -120,7 +104,7 @@ Possible cause: simulator has not started yet or exited early.
 
 Solution:
 
-```
+```bash
 docker compose logs simulator
 docker compose restart simulator
 ```
@@ -129,7 +113,7 @@ docker compose restart simulator
 
 Stop the stack, then start fresh:
 
-```
+```bash
 docker compose down
 docker compose up --build
 ```
