@@ -8,14 +8,13 @@ The system ingests daily patient readings, evaluates them against recovery rules
 
 ## System Architecture
 
-```text
-Simulator
-   ↓
-Patient Service   Telemetry Service
-        ↘               ↙
-         Alert Service
-               ↓
-           Dashboard
+```mermaid
+graph TD
+    SIM[Simulator] --> TEL[Telemetry Service :8002]
+    SIM --> PAT[Patient Service :8001]
+    PAT --> ALT[Alert Service :8003]
+    TEL --> ALT
+    ALT --> DASH[Dashboard :3000]
 ```
 
 All five components run as containers under Docker Compose.
