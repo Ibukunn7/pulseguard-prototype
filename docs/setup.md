@@ -1,75 +1,112 @@
-PulseGuard Setup Guide
-Overview
+# PulseGuard Setup Guide
+
+## Overview
+
 This guide explains how to set up and run the PulseGuard prototype locally.
 
-Prerequisites
+## Prerequisites
+
 The following software must be installed:
 
-Python 3.x
-Node.js
-npm
-Git
+- Docker
+- Docker Compose
+- Git
 
-Clone Repository
+## Clone Repository
+
+```bash
 git clone https://github.com/Ibukunn7/pulseguard-prototype.git
+```
+
 Navigate into the repository:
 
+```bash
 cd pulseguard-prototype
+```
 
-Backend Setup
-Navigate to the backend directory:
+## Running with Docker Compose
 
-cd backend
-Install dependencies:
+Build and start all services:
 
+```bash
+docker compose up --build
+```
+
+The following ports will be available:
+
+| Service           | Port |
+|-------------------|------|
+| Patient service   | 8001 |
+| Telemetry service | 8002 |
+| Alert service     | 8003 |
+| Dashboard         | 3000 |
+
+The simulator starts automatically and begins replaying patient data.
+
+Open the dashboard at `http://localhost:3000`.
+
+## Stopping the Stack
+
+```bash
+docker compose down
+```
+
+## Running Without Docker
+
+If Docker is not available, each service can be run manually.
+
+### Manual Prerequisites
+
+- Python 3.12
+- Node.js 20
+- npm
+
+### Patient Service
+
+```bash
+cd services/patient-service
 pip install -r requirements.txt
-Start the FastAPI server:
+uvicorn main:app --port 8001
+```
 
-uvicorn main:app --reload
-The API will be available at:
+### Telemetry Service
 
-http://127.0.0.1:8000
+```bash
+cd services/telemetry-service
+pip install -r requirements.txt
+uvicorn main:app --port 8002
+```
 
-Simulator Setup
-Open a second terminal.
+### Alert Service
 
-Navigate to the simulator directory:
+```bash
+cd services/alert-service
+pip install -r requirements.txt
+uvicorn main:app --port 8003
+```
 
-cd simulator
-Run the telemetry simulator:
+### Dashboard
 
-python patient_simulator.py
-The simulator will continuously generate synthetic patient telemetry data.
-
-Frontend Setup
-Open a third terminal.
-
-Navigate to the frontend directory:
-
+```bash
 cd frontend
-Install dependencies:
-
 npm install
-Start the React application:
-
 npm run dev
-The dashboard will be available at:
+```
 
-http://localhost:5173
+The dashboard will be available at `http://localhost:5173`.
 
-Running the Complete System
-Three processes must be running simultaneously:
+### Simulator
 
-Terminal 1
-uvicorn main:app --reload
-Terminal 2
+```bash
+cd simulator
+pip install -r requirements.txt
 python patient_simulator.py
-Terminal 3
-npm run dev
+```
 
-Expected Behaviour
-The simulator generates patient telemetry.
+## Expected Behaviour
 
-The FastAPI backend receives and classifies the data.
+The simulator generates five patient recoveries over 42 days.
 
-The React dashboard displays patient status and risk levels in real time.
+The alert service evaluates readings and flags patients who drift.
+
+The dashboard displays patients ranked by flag count and updates every two seconds during the demo.

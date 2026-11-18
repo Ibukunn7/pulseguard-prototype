@@ -1,87 +1,152 @@
-PulseGuard Architecture
-Overview
-PulseGuard is a Remote Patient Monitoring (RPM) platform designed to monitor patient health after discharge from hospital.
+# PulseGuard Architecture
 
-The system collects biometric telemetry, processes patient readings, classifies risk levels and presents the information through a clinician dashboard.
+## Overview
 
-System Architecture
-Patient Simulator
-        ↓
-FastAPI Backend
-        ↓
-Alert Engine
-        ↓
-React Dashboard
+PulseGuard is a microservices-based Remote Patient Monitoring platform for knee replacement recovery.
 
-Components
-Patient Simulator
-The patient simulator generates synthetic biometric telemetry data.
+The system ingests daily patient readings, evaluates them against recovery rules, and presents the results through a GP dashboard.
 
-Example telemetry data includes:
+## System Architecture
 
-Patient ID
-Patient Name
-Heart Rate
-Sleep Hours
-Timestamp
-The telemetry is sent to the backend using HTTP POST requests.
+```mermaid
+graph TD
+    SIM[Simulator] --> TEL[Telemetry Service :8002]
+    SIM --> PAT[Patient Service :8001]
+    PAT --> ALT[Alert Service :8003]
+    TEL --> ALT
+    ALT --> DASH[Dashboard :3000]
+```
 
-FastAPI Backend
-The backend receives telemetry from the simulator.
+All five components run as containers under Docker Compose.
+
+## Components
+
+### Patient Service
+
+Maintains the patient registry.
 
 Responsibilities:
 
-Data validation
-Telemetry ingestion
-Risk classification
-API endpoint exposure
-Current APIs:
+- Store patient records (name, age, surgery date, walking ability)
+- Expose patient list and individual patient lookup
+- Walking ability is used by the alert service to adjust step targets
 
-GET /
-GET /vitals
-POST /vitals
+Port: `8001`
 
-Alert Engine
-The alert engine evaluates incoming telemetry.
+### Telemetry Service
 
-Current rules:
+Stores daily readings. Has no knowledge of clinical meaning.
 
-Heart Rate > 110 BPM = HIGH RISK
-Heart Rate > 95 BPM = MODERATE RISK
-Sleep Hours < 5 = MODERATE RISK
-The generated risk level is attached to each reading.
-React Dashboard
-The dashboard retrieves telemetry using the GET /vitals endpoint.
+Responsibilities:
 
-Features:
+- Accept and store one reading per patient per day
+- Expose readings by patient in day order
+- Manage simulator configuration (seconds per day, total days)
 
-Live telemetry updates
-Latest reading per patient
-Risk classification display
-Dashboard statistics
-Colour-coded patient status
+A reading contains:
 
+- Steps
+- Resting heart rate
+- Sleep hours
+- Pain score (0–10)
+- Recovery day
 
-Current Technology Stack
-Frontend
-React
-Vite
-JavaScript
-Backend
-Python
-FastAPI
-Pydantic
-Simulation
-Python
-Requests
+Port: `8002`
 
-Future Architecture
+### Alert Service
+
+Evaluates readings against recovery rules. Stores nothing.
+
+Responsibilities:
+
+- Fetch patients and readings from the other services on each request
+- Compute the expected step band for each recovery week
+- Calculate each patient's heart rate baseline (mean of first three days)
+- Evaluate three flags per patient
+- Return patients ranked by flag count
+
+Port: `8003`
+
+### Dashboard
+
+React frontend served by Nginx.
+
+Responsibilities:
+
+- Display patients ranked by urgency
+- Show flag status and reason per patient
+- Render trend charts against the expected band and personal baseline
+- Display demo clock when simulator is attached
+
+Port: `3000`
+
+### Simulator
+
+Replays synthetic six-week recoveries for five patients.
+
+Responsibilities:
+
+- POST one reading per patient per day on each tick
+- Drift two patients on purpose so all three flags fire
+- Run as a container; does not expose an HTTP port
+
+## Flag Rules
+
+### Mobilisation
+
+Steps below the expected weekly band for seven consecutive days, or no week-on-week increase after day 14.
+
+The step target is adjusted by walking ability: unaided 1.0, stick 0.85, frame 0.70.
+
+Status: `pending` until day 7.
+
+### Complication
+
+Resting heart rate 10 BPM or more above the personal baseline for three consecutive days.
+
+Baseline is the mean resting heart rate from the first three days of readings.
+
+Status: `pending` until day 3.
+
+### Pain
+
+Pain score 7 or above for three consecutive days, or sleep under five hours with pain 5 or above for three consecutive nights.
+
+Status: `pending` until day 3.
+
+## Technology Stack
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- Nginx
+
+### Backend
+
+- Python
+- FastAPI
+- Pydantic
+- httpx
+
+### Infrastructure
+
+- Docker
+- Docker Compose
+
+### Simulation
+
+- Python
+- Requests
+
+## Future Architecture
+
 Future development will include:
 
-PostgreSQL database
-Authentication
-Role-Based Access Control (RBAC)
-Docker containers
-CI/CD pipeline
-Kubernetes deployment
-Monitoring and logging
+- PostgreSQL per service, with migrations
+- Authentication and role-based access control
+- HealthKit and Health Connect wearable integration
+- Kubernetes deployment
+- CI/CD pipeline
+- Monitoring and logging

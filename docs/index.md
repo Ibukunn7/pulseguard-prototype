@@ -1,106 +1,117 @@
-PulseGuard Documentation
-Overview
+# PulseGuard Documentation
+
+## Overview
+
 PulseGuard is a Remote Patient Monitoring (RPM) platform developed as part of a fourth-year DevOps project.
 
-The platform monitors patient biometric telemetry, classifies health risks using predefined rules, and presents information through a clinician dashboard.
+The platform monitors knee replacement patients during the first six weeks of home recovery, flags patients who drift from their expected trajectory, and presents the information through a GP dashboard.
 
 The project currently consists of:
 
-Synthetic patient telemetry generation
-FastAPI backend services
-Alert classification engine
-React frontend dashboard
-Risk analysis and patient monitoring
+- Patient registry service
+- Telemetry ingestion service
+- Alert and flag evaluation service
+- React frontend dashboard
+- Recovery simulator
 
-Project Goals
+## Project Goals
+
 The primary goals of PulseGuard are:
 
-Monitor patient health remotely
-Detect potential deterioration through telemetry analysis
-Support clinician decision-making
-Demonstrate modern DevOps practices
-Showcase Infrastructure as Code, CI/CD and cloud deployment strategies
-Technology Stack
-Frontend
-React
-Vite
-JavaScript
-Backend
-Python
-FastAPI
-Pydantic
-Simulation
-Python
-Requests
+- Monitor knee replacement recovery remotely
+- Detect patients drifting from expected recovery trajectories
+- Support GP decision-making with ranked, explained flags
+- Demonstrate modern DevOps practices
+- Showcase containerisation, CI/CD and cloud deployment strategies
 
+## Technology Stack
 
-Future Technologies
-PostgreSQL
-Docker
-Kubernetes
-Terraform
-GitHub Actions
-Prometheus
-Grafana
-Argo CD
-Documentation Structure
+### Frontend
+
+- React
+- Vite
+- JavaScript
+
+### Backend
+
+- Python
+- FastAPI
+- Pydantic
+
+### Infrastructure
+
+- Docker
+- Docker Compose
+- Nginx
+
+### Simulation
+
+- Python
+- Requests
+
+## Future Technologies
+
+- PostgreSQL
+- Kubernetes
+- Terraform
+- GitHub Actions
+- Prometheus
+- Grafana
+- Argo CD
+
+## Documentation Structure
+
 The following documentation is available:
 
-Architecture
+**Architecture**
 Describes the system design and component interactions.
 
-See:
+See: [architecture.md](architecture.md)
 
-architecture.md
-Setup Guide
+**Setup Guide**
 Instructions for running PulseGuard locally.
 
-See:
+See: [setup.md](setup.md)
 
-setup.md
-
-API Documentation
+**API Documentation**
 Details of backend endpoints and request/response formats.
 
-See:
+See: [api.md](api.md)
 
-api.md
-Testing Documentation
+**Testing Documentation**
 Testing strategy and validation procedures.
 
-See:
+See: [testing.md](testing.md)
 
-testing.md
-Operations Runbook
+**Operations Runbook**
 System startup and troubleshooting procedures.
 
-See:
+See: [runbook.md](runbook.md)
 
-runbook.md
-Changelog
+**Changelog**
 Project history and feature progression.
 
-See:
+See: [changelog.md](changelog.md)
 
-changelog.md
+## Current Status
 
-Current Status
 The current prototype successfully demonstrates:
 
-Telemetry generation
-Telemetry ingestion
-Risk classification
-Alert processing
-Dashboard visualisation
-Real-time updates
-Future Work
+- Patient registry with five knee replacement patients
+- Daily telemetry ingestion (steps, heart rate, sleep, pain)
+- Three clinical flag rules evaluated against recovery history
+- GP dashboard ranking patients by urgency
+- Full stack containerised with Docker Compose
+- Recovery simulator replaying six weeks in under a minute
+
+## Future Work
+
 Planned enhancements include:
 
-PostgreSQL integration
-Authentication and authorisation
-Historical telemetry storage
-Heart rate trend visualisations
-Docker containerisation
-CI/CD automation
-Observability and monitoring
-Kubernetes deployment
+- PostgreSQL integration
+- Authentication and authorisation
+- HealthKit and Health Connect wearable integration
+- GP controls: acknowledge, snooze, per-patient thresholds
+- CI/CD automation
+- Observability and monitoring
+- Kubernetes deployment

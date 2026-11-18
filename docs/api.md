@@ -1,87 +1,197 @@
-PulseGuard API Documentation
+# PulseGuard API Documentation
 
-Overview
-The PulseGuard backend exposes REST API endpoints used by the telemetry simulator and clinician dashboard.
+## Overview
 
-Base URL:
+PulseGuard exposes three backend services, each on its own port.
 
-http://127.0.0.1:8000
+| Service           | Base URL                  |
+|-------------------|---------------------------|
+| Patient service   | http://localhost:8001     |
+| Telemetry service | http://localhost:8002     |
+| Alert service     | http://localhost:8003     |
 
-GET /
-Returns the health status of the backend service.
+---
 
-Request
-GET /
-Response
-{
-  "message": "PulseGuard Backend Running"
-}
+## Patient Service
 
-GET /vitals
-Returns stored patient telemetry readings.
+### GET /health
 
-Request
-GET /vitals
-Example Response
+Returns the health status of the service.
+
+Response:
+
+```json
+{ "status": "ok" }
+```
+
+### GET /patients
+
+Returns all registered patients.
+
+Response:
+
+```json
 [
   {
-    "reading": {
-      "patient_id": 2,
-      "patient_name": "Sarah Smith",
-      "heart_rate": 124,
-      "sleep_hours": 7.2,
-      "timestamp": "2026-11-02T15:24:47.718907"
-    },
-    "alert": "HIGH RISK"
+    "id": 1,
+    "name": "John Doe",
+    "age": 67,
+    "surgery_date": "2026-10-07",
+    "walking_ability": "unaided"
   }
 ]
+```
 
-POST /vitals
-Receives telemetry from the patient simulator.
+Walking ability values: `unaided`, `stick`, `frame`.
 
-Request
-POST /vitals
-Example Request Body
+### GET /patients/{id}
+
+Returns a single patient by ID.
+
+Returns `404` if the patient does not exist.
+
+### POST /patients
+
+Creates a new patient.
+
+Request body:
+
+```json
 {
-  "patient_id": 2,
-  "patient_name": "Sarah Smith",
-  "heart_rate": 124,
+  "name": "string",
+  "age": 18,
+  "surgery_date": "YYYY-MM-DD",
+  "walking_ability": "unaided"
+}
+```
+
+---
+
+## Telemetry Service
+
+### GET /health
+
+Returns the health status of the service.
+
+### POST /readings
+
+Stores a daily reading for a patient.
+
+One reading per patient per day. A second POST for the same patient and day replaces the first.
+
+Returns `201` on success.
+
+Request body:
+
+```json
+{
+  "patient_id": 1,
+  "day": 7,
+  "steps": 2400,
+  "resting_hr": 72,
   "sleep_hours": 7.2,
-  "timestamp": "2026-11-02T15:24:47.718907"
+  "pain": 3
 }
-Example Response
+```
+
+### GET /readings/{patient_id}
+
+Returns all readings for a patient, ordered by day.
+
+Returns `[]` if no readings exist.
+
+### DELETE /readings
+
+Deletes all readings for all patients.
+
+Returns `204`.
+
+### GET /simulation
+
+Returns the current simulator configuration.
+
+Response:
+
+```json
 {
-  "message": "Vital Added"
+  "seconds_per_day": 1.5,
+  "total_days": 42
 }
+```
 
-Alert Classification Rules
-The backend automatically classifies patient risk levels.
+### PUT /simulation
 
-High Risk
-Heart Rate > 110 BPM
-Result:
+Updates the simulator configuration.
 
-HIGH RISK
+Request body:
 
-Moderate Risk
-Heart Rate > 95 BPM
-or
+```json
+{
+  "seconds_per_day": 1.5,
+  "total_days": 42
+}
+```
 
-Sleep Hours < 5
-Result:
+---
 
-MODERATE RISK
+## Alert Service
 
-Normal
-Patients not matching any alert condition are classified as:
+### GET /health
 
-NORMAL
+Returns the health status of the service.
 
-Future API Enhancements
-Planned API features include:
+### GET /status
 
-Authentication
-Patient management endpoints
-Historical telemetry endpoints
-Alert management endpoints
-User roles and permissions
+Returns the health status of all three services and the current simulator configuration.
+
+Response:
+
+```json
+{
+  "services": {
+    "alert": "ok",
+    "patient": "ok",
+    "telemetry": "ok"
+  },
+  "simulation": {
+    "seconds_per_day": 1.5,
+    "total_days": 42
+  }
+}
+```
+
+### GET /patients
+
+Returns all patients ranked by flag count, then by recovery day.
+
+Each patient includes:
+
+- Current recovery day and week
+- Latest reading
+- Heart rate baseline
+- Three flag evaluations (mobilisation, complication, pain)
+- Total flag count
+
+Flag status values: `clear`, `flagged`, `pending`.
+
+### GET /patients/{id}
+
+Returns full detail for a single patient.
+
+Includes all fields from `GET /patients` plus:
+
+- Full reading history
+- Expected step band per week
+
+Returns `404` if the patient does not exist.
+
+---
+
+## Future API Enhancements
+
+Planned features include:
+
+- Authentication
+- GP controls: acknowledge, snooze, per-patient thresholds
+- Alert history endpoints
+- User roles and permissions
