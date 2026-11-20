@@ -162,17 +162,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (selectedId == null) {
-      setDetail(null);
-      return undefined;
-    }
+    if (selectedId == null) return undefined;
     let active = true;
     const load = async () => {
       try {
         const res = await fetch(`${API}/patients/${selectedId}`);
         const data = await res.json();
         if (active) setDetail(data);
-      } catch (e) {
+      } catch {
         /* list poll reports the error */
       }
     };
@@ -230,7 +227,7 @@ export default function App() {
             />
           ))}
         </div>
-        <PatientDetail detail={detail} />
+        <PatientDetail detail={detail?.patient.id === selectedId ? detail : null} />
       </div>
     </div>
   );
